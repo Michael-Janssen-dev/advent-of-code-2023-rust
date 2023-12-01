@@ -1,7 +1,10 @@
+use aoc_macros::aoc;
+
 const NUMBERS: [&str; 10] = [
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 
+#[aoc(test="142", part=1)]
 fn part_1(input: &str) -> u32 {
     input
         .lines()
@@ -12,6 +15,7 @@ fn part_1(input: &str) -> u32 {
         .sum()
 }
 
+#[aoc(test=281, part=2)]
 fn part_2(input: &str) -> u32 {
     input
         .lines()
@@ -46,20 +50,4 @@ fn part_2(input: &str) -> u32 {
 fn main() {
     println!("Part 1: {}", part_1(include_str!("../input.txt")));
     println!("Part 2: {}", part_2(include_str!("../input.txt")));
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::part_1;
-    use crate::part_2;
-
-    #[test]
-    fn test_part_1() {
-        assert_eq!(part_1(include_str!("../test-1.txt")), 142);
-    }
-
-    #[test]
-    fn test_part_2() {
-        assert_eq!(part_2(include_str!("../test-2.txt")), 281);
-    }
 }
