@@ -7,19 +7,10 @@ struct Round {
     blue: u32,
 }
 
-#[derive(Debug)]
-struct Game {
-    id: u32,
-    rounds: Vec<Round>,
-}
-
-fn parse_game(line: &str) -> Game {
-    let (id, rest) = line.split_once(": ").unwrap();
-    let id = id.split_once(' ').unwrap().1.parse().unwrap();
-    let mut rounds = vec![];
-    for round_str in rest.split("; ") {
+impl From<&str> for Round {
+    fn from(value: &str) -> Self {
         let mut round = Round::default();
-        for cubes in round_str.split(", ") {
+        for cubes in value.split(", ") {
             let (n, color) = cubes.split_once(' ').unwrap();
             let n = n.parse().unwrap();
             match color {
@@ -29,14 +20,28 @@ fn parse_game(line: &str) -> Game {
                 _ => unreachable!("Parse error!"),
             }
         }
-        rounds.push(round);
+        round
     }
-    Game { id, rounds }
+}
+
+#[derive(Debug)]
+struct Game {
+    id: u32,
+    rounds: Vec<Round>,
+}
+
+impl From<&str> for Game {
+    fn from(line: &str) -> Self {
+        let (id, rest) = line.split_once(": ").unwrap();
+        let id = id.split_once(' ').unwrap().1.parse().unwrap();
+        let rounds = rest.split("; ").map(Round::from).collect();
+        Game { id, rounds }
+    }
 }
 
 #[aoc(test = "8")]
 fn part_1(inp: &str) -> u32 {
-    let games: Vec<Game> = inp.lines().map(parse_game).collect();
+    let games: Vec<Game> = inp.lines().map(Game::from).collect();
     games
         .iter()
         .filter_map(|g| {
@@ -54,7 +59,7 @@ fn part_1(inp: &str) -> u32 {
 
 #[aoc(test = "2286")]
 fn part_2(inp: &str) -> u32 {
-    let games: Vec<Game> = inp.lines().map(parse_game).collect();
+    let games: Vec<Game> = inp.lines().map(Game::from).collect();
     games
         .iter()
         .map(|g| {
