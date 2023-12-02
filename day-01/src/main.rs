@@ -15,7 +15,7 @@ fn part_1(input: &str) -> u32 {
         .sum()
 }
 
-#[aoc(test=281, part=2)]
+#[aoc(test="281", part=2)]
 fn part_2(input: &str) -> u32 {
     input
         .lines()
