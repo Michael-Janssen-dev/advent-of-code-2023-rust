@@ -6,7 +6,7 @@ use syn::{parse_macro_input, ItemFn};
 #[derive(FromMeta)]
 struct AocMacroArgs {
     test: String,
-    part: u8
+    part: Option<u8>
 }
 
 #[proc_macro_attribute]
@@ -30,8 +30,8 @@ fn try_aoc(args: AocMacroArgs, item: ItemFn) -> Result<proc_macro2::TokenStream,
     let test_ident = format_ident!("{}_tests", ident);
     let test_fn_ident = format_ident!("test_{}", ident);
     let mut test = "../test.txt".to_string();
-    if !std::path::Path::new("../test.txt").exists() {
-        test = format!("../test-{}.txt", args.part);
+    if args.part.is_some(){
+        test = format!("../test-{}.txt", args.part.unwrap());
     }
     Ok(
         quote!(
