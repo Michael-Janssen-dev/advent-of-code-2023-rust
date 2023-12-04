@@ -19,8 +19,7 @@ fn part_1(inp: &str) -> u32 {
                     }
                 }
                 for i in y.saturating_sub(1)..lines.len().min(y + 2) {
-                    for j in x.saturating_sub(1)..lines[0].len().min(x + digits.len() + 1)
-                    {
+                    for j in x.saturating_sub(1)..lines[0].len().min(x + digits.len() + 1) {
                         if !lines[i][j].is_ascii_digit() && lines[i][j] != '.' {
                             sum += digits.iter().fold(0, |acc, dig| acc * 10 + dig);
                             break;
