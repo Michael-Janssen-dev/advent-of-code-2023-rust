@@ -20,7 +20,7 @@ impl Range {
 
 impl From<&str> for Range {
     fn from(value: &str) -> Self {
-        let mut values = value.splitn(3, " ");
+        let mut values = value.splitn(3, ' ');
         Range {
             dest_start: values.next().unwrap().parse().unwrap(),
             src_start: values.next().unwrap().parse().unwrap(),
@@ -51,7 +51,7 @@ impl Map {
                     } else {
                         new_mapping.push((range.dest_start + (cur_src - range.src_start), range.src_start + range.len - cur_src));
                         let new_src = range.src_start + range.len;
-                        cur_len = cur_len - (new_src - cur_src);
+                        cur_len -= new_src - cur_src;
                         cur_src = new_src;
                     }
                 }
@@ -66,7 +66,7 @@ impl Map {
 
 impl From<&str> for Map {
     fn from(value: &str) -> Self {
-        let mut ranges: Vec<Range> = value.split("\n").skip(1).map(Range::from).collect();
+        let mut ranges: Vec<Range> = value.split('\n').skip(1).map(Range::from).collect();
         ranges.sort_by_key(|range| range.src_start);
         Map {
             ranges
@@ -77,7 +77,7 @@ impl From<&str> for Map {
 #[aoc(test="35")]
 fn part_1(inp: &str) -> u64 {
     let (seeds, mut maps) = inp.split_once("\n\n").unwrap();
-    let mut seeds: Vec<u64> = seeds.split(" ").filter_map(|x| x.parse().ok()).collect();
+    let mut seeds: Vec<u64> = seeds.split(' ').filter_map(|x| x.parse().ok()).collect();
     while let Some((map, new_maps)) = maps.split_once("\n\n") {
         let map = Map::from(map);
         seeds = seeds.iter().map(|s| map.map(*s)).collect();
@@ -92,7 +92,7 @@ fn part_1(inp: &str) -> u64 {
 fn part_2(inp: &str) -> u64 {
     let (seed_str, mut maps) = inp.split_once("\n\n").unwrap();
     let mut seeds = Vec::new();
-    let mut seed_iter = seed_str.split(" ").skip(1);
+    let mut seed_iter = seed_str.split(' ').skip(1);
     while let (Some(a), Some(b)) = (seed_iter.next(), seed_iter.next()) {
         seeds.push((a.parse().unwrap(), b.parse().unwrap()));
     }
