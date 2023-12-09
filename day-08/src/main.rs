@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use aoc_macros::aoc;
 
@@ -43,10 +43,7 @@ fn part_2(inp: &str) -> i128 {
         let right = &right[..3];
         trees.insert(parent, (left, right));
     }
-    let mut current_nodes: Vec<&str> = trees
-        .keys()
-        .filter(|t| t.ends_with('A')).copied()
-        .collect();
+    let mut current_nodes: Vec<&str> = trees.keys().filter(|t| t.ends_with('A')).copied().collect();
     let mut c: i128 = 1;
     let mut done = Vec::new();
     for p in path.chars().cycle() {
