@@ -17,9 +17,13 @@ fn get_sequences(s: Vec<i32>) -> Vec<Vec<i32>> {
     diff
 }
 
-#[aoc(test="114")]
+#[aoc(test = "114")]
 fn part_1(inp: &str) -> i32 {
-    let sequences = inp.lines().map(|line| line.split_whitespace().filter_map(|v| v.parse().ok()).collect::<Vec<i32>>());
+    let sequences = inp.lines().map(|line| {
+        line.split_whitespace()
+            .filter_map(|v| v.parse().ok())
+            .collect::<Vec<i32>>()
+    });
     let mut sum = 0;
     for s in sequences {
         let diff = get_sequences(s);
@@ -32,9 +36,13 @@ fn part_1(inp: &str) -> i32 {
     sum
 }
 
-#[aoc(test="2")]
+#[aoc(test = "2")]
 fn part_2(inp: &str) -> i32 {
-    let sequences = inp.lines().map(|line| line.split_whitespace().filter_map(|v| v.parse().ok()).collect::<Vec<i32>>());
+    let sequences = inp.lines().map(|line| {
+        line.split_whitespace()
+            .filter_map(|v| v.parse().ok())
+            .collect::<Vec<i32>>()
+    });
     let mut sum = 0;
     for s in sequences {
         let diff = get_sequences(s);
