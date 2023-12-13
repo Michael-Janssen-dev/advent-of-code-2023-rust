@@ -58,17 +58,14 @@ fn find_palindrome(items: &[u32]) -> Option<usize> {
     None
 }
 
-// I couldn't find anywhere in the task what you should do if two reflection lines are found,
-// but it works if the largest reflection is returned.
 fn find_smudgy_palindrome(items: &[u32]) -> Option<usize> {
-    let mut xs = vec![];
     for x in 0..items.len() - 1 {
         let mut i = x;
         let mut j = x + 1;
         let mut smudge = false;
         loop {
             if items[i] != items[j] {
-                let diff = items[i].abs_diff(items[j]);
+                let diff = items[i] ^ items[j];
                 if !smudge && ((diff & (diff - 1)) == 0) {
                     smudge = true;
                 } else {
@@ -79,18 +76,13 @@ fn find_smudgy_palindrome(items: &[u32]) -> Option<usize> {
                 if !smudge {
                     break;
                 }
-                xs.push((j - i, x));
-                break;
+                return Some(x);
             }
             i -= 1;
             j += 1;
         }
     }
-    if xs.is_empty() {
-        return None;
-    }
-    xs.sort();
-    Some(xs[xs.len() - 1].1)
+    None
 }
 
 #[aoc(test = "405")]
@@ -113,7 +105,7 @@ fn part_1(inp: &str) -> u32 {
 fn part_2(inp: &str) -> u32 {
     let mirrors: Vec<_> = inp.split("\n\n").map(Mirror::from).collect();
     let mut sum = 0;
-    for mirror in &mirrors {
+    for mirror in &mirrors{
         let horizontal = find_smudgy_palindrome(&mirror.horizontals);
         if let Some(x) = horizontal {
             sum += (x + 1) * 100;
