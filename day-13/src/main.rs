@@ -105,7 +105,7 @@ fn part_1(inp: &str) -> u32 {
 fn part_2(inp: &str) -> u32 {
     let mirrors: Vec<_> = inp.split("\n\n").map(Mirror::from).collect();
     let mut sum = 0;
-    for mirror in &mirrors{
+    for mirror in &mirrors {
         let horizontal = find_smudgy_palindrome(&mirror.horizontals);
         if let Some(x) = horizontal {
             sum += (x + 1) * 100;
