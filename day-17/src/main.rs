@@ -98,7 +98,7 @@ fn shortest_path(map: &[Vec<u32>], part_2: bool) -> u32 {
                 .take(3)
                 .for_each(|&(n_y, n_x)| new_dist -= map[n_y][n_x] as isize);
         }
-        for &(n_y, n_x) in next.iter().skip(3) {
+        for &(n_y, n_x) in if part_2 {next.iter().skip(3)} else {next.iter().skip(0)} {
             new_dist -= map[n_y][n_x] as isize;
             for new_dir in dir.perp() {
                 if visited.contains(&(new_dir, (n_y, n_x))) {
