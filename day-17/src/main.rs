@@ -52,22 +52,18 @@ impl Direction {
         match self {
             Left => (x.saturating_sub(10)..x)
                 .rev()
-                .take(10)
                 .map(move |x| (y, x))
                 .collect(),
             Right => (x + 1..=x + 10)
                 .take_while(|x| *x <= b_x)
-                .take(10)
                 .map(move |x| (y, x))
                 .collect(),
             Up => (y.saturating_sub(10)..y)
                 .rev()
-                .take(10)
                 .map(move |y| (y, x))
                 .collect(),
             Down => (y + 1..=y + 10)
                 .take_while(|y| *y <= b_y)
-                .take(10)
                 .map(move |y| (y, x))
                 .collect(),
         }
