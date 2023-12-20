@@ -75,11 +75,11 @@ use Direction::*;
 fn shortest_path(map: &[Vec<u32>], part_2: bool) -> u32 {
     let end = (map.len() - 1, map[0].len() - 1);
     let mut queue = BinaryHeap::new();
-    queue.push((0_isize, Right, (0, 0)));
-    queue.push((0, Left, (0, 0)));
+    queue.push((0, 0_isize, Right, (0, 0)));
+    queue.push((0, 0, Left, (0, 0)));
     let mut visited = HashSet::new();
     let mut res = 0;
-    while let Some((dist, dir, (y, x))) = queue.pop() {
+    while let Some((_heuristic, dist, dir, (y, x))) = queue.pop() {
         if (y, x) == end {
             res = dist;
             break;
@@ -104,7 +104,7 @@ fn shortest_path(map: &[Vec<u32>], part_2: bool) -> u32 {
                 if visited.contains(&(new_dir, (n_y, n_x))) {
                     continue;
                 }
-                queue.push((new_dist, new_dir, (n_y, n_x)));
+                queue.push((new_dist + (end.0 - n_y) as isize + (end.1 - n_x) as isize, new_dist , new_dir, (n_y, n_x)));
             }
         }
     }
