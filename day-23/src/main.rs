@@ -8,7 +8,7 @@ const D_TO_DIR: [((isize, isize), char); 4] =
 type Vertex = (isize, isize);
 type Edge = (usize, usize, isize);
 
-fn build_graph(map: &[Vec<char>], cyclic: bool) -> (Vec<Vertex>, Vec<Edge>) {
+fn build_graph(map: &[Vec<char>]) -> (Vec<Vertex>, Vec<Edge>) {
     let start: (isize, isize) = (0, map[0].iter().position(|c| *c == '.').unwrap() as isize);
     let end: (isize, isize) = (
         (map.len() - 1) as isize,
@@ -32,12 +32,6 @@ fn build_graph(map: &[Vec<char>], cyclic: bool) -> (Vec<Vertex>, Vec<Edge>) {
                 //skip the previous
                 continue;
             }
-            if cyclic {
-                if map[(y + dy) as usize][(x + dx) as usize] != '#' {
-                    next.push((dy, dx));
-                }
-                continue;
-            }
             if map[(y + dy) as usize][(x + dx) as usize] == '.' {
                 next.push((dy, dx));
             }
@@ -53,9 +47,6 @@ fn build_graph(map: &[Vec<char>], cyclic: bool) -> (Vec<Vertex>, Vec<Edge>) {
         if next.len() > 1 {
             let v_i = vertices.iter().position(|v| *v == (y, x)).unwrap_or(v_n);
             edges.push((v, v_i, dist));
-            if cyclic {
-                edges.push((v_i, v, dist));
-            }
             if v_i != v_n {
                 continue;
             }
@@ -71,93 +62,111 @@ fn build_graph(map: &[Vec<char>], cyclic: bool) -> (Vec<Vertex>, Vec<Edge>) {
     (vertices, edges)
 }
 
+type Graph = HashMap<(isize, isize), HashSet<((isize, isize), isize)>>;
+
+fn build_cyclic_graph(
+    map: &[Vec<char>],
+) -> Graph {
+    let mut graph = HashMap::new();
+    for y in 0..map.len() as isize {
+        for x in 0..map[0].len() as isize {
+            if map[y as usize][x as usize] == '#' {
+                continue;
+            }
+            let mut new_vertex = HashSet::new();
+            for (dy, dx) in [(0, 1), (0, -1), (1, 0), (-1, 0)] {
+                let ny = y + dy;
+                let nx = x + dx;
+                if ny < 0 || nx < 0 || ny >= map.len() as isize || nx >= map[0].len() as isize {
+                    continue;
+                }
+                if map[ny as usize][nx as usize] != '#' {
+                    new_vertex.insert(((ny, nx), 1));
+                }
+            }
+            graph.insert((y, x), new_vertex);
+        }
+    }
+    let mut update = false;
+    while !update {
+        update = true;
+        for key in graph.keys().copied().collect::<Vec<_>>() {
+            if graph[&key].len() != 2 {
+                continue;
+            }
+
+            let mut iter = graph[&key].iter();
+            let (a, a_dist) = *iter.next().unwrap();
+            let (b, b_dist) = *iter.next().unwrap();
+
+            let a_point = graph.get_mut(&a).unwrap();
+            a_point.retain(|(pos, _)| *pos != key);
+            a_point.insert((b, a_dist + b_dist));
+
+            let b_point = graph.get_mut(&b).unwrap();
+            b_point.retain(|(pos, _)| *pos != key);
+            b_point.insert((a, a_dist + b_dist));
+
+            graph.remove(&key);
+
+            update = false
+        }
+    }
+    graph
+}
+
 fn longest_path(edges: &[Edge], end: usize) -> usize {
     let mut queue = BinaryHeap::new();
     queue.push((0_isize, 0));
     let mut paths = HashSet::new();
     while let Some((dist, v)) = queue.pop() {
         if v == end {
-            paths.insert(dist.abs() as usize);
+            paths.insert(dist.unsigned_abs());
         }
         let adjacent: Vec<_> = edges.iter().filter(|(a, _, _)| *a == v).collect();
         adjacent
             .iter()
-            .for_each(|(_, v, d)| queue.push((dist as isize - d, *v)))
+            .for_each(|(_, v, d)| queue.push((dist - d, *v)))
     }
     *paths.iter().max().unwrap()
-}
-
-fn longest_cyclic_path(
-    node: usize,
-    end: usize,
-    edges: &HashMap<usize, HashMap<usize, isize>>,
-    visited: u64,
-) -> usize {
-    if node == end {
-        return 0;
-    }
-    let res = edges
-        .get(&node)
-        .unwrap()
-        .iter()
-        .filter_map(|(v, d)| {
-            if visited & (1 << *v) == 0 {
-                let new_cost = longest_cyclic_path(*v, end, &edges, visited ^ (1 << *v));
-                Some(new_cost + *d as usize)
-            } else {
-                None
-            }
-        })
-        .max()
-        .unwrap_or(0);
-    res
 }
 #[aoc(test = "94")]
 fn part_1(inp: &str) -> usize {
     let map: Vec<Vec<_>> = inp.lines().map(|line| line.chars().collect()).collect();
-    let (_, edges) = build_graph(&map, false);
+    let (_, edges) = build_graph(&map);
     longest_path(&edges, 1)
 }
-
-fn longest_cyclic_path_2(node: (isize, isize), end: (isize, isize), map: &[Vec<char>], visited: HashSet<(isize, isize)>) -> usize {
-    if node == end {
-        return 0
-    }
-    let mut current_max = 0;
-    for (dy, dx) in [(0, 1), (0, -1), (1, 0), (-1, 0)] {
-        let (ny, nx) = (node.0 + dy, node.1 + dx);
-        if map[ny as usize][nx as usize] == '#' {
-            continue;
-        }
-        if visited.contains(&(node.0 + dy, node.1 + dx)) {
-            continue;
-        }
-        let mut new_visited = visited.clone();
-        new_visited.insert((ny, nx));
-        let new_cost = longest_cyclic_path_2((ny, nx), end, map, new_visited);
-        current_max = current_max.max(new_cost + 1)
-    }
-    current_max
-}
-
 
 #[aoc(test = "154")]
 fn part_2(inp: &str) -> usize {
     let map: Vec<Vec<_>> = inp.lines().map(|line| line.chars().collect()).collect();
-    let (vertices, edges) = build_graph(&map, true);
-    let mut new_edges = HashMap::new();
-    for (a, b, cost) in edges {
-        let adj = new_edges.entry(a).or_insert(HashMap::new());
-        let entry = adj.entry(b).or_insert(0);
-        *entry = (*entry).max(cost);
-    }
-    let mut visited = 0;
-    visited = visited ^ (1 << 0);
-    eprintln!("{:?}", new_edges);
-    // longest_cyclic_path(0, 1, &new_edges, visited)
+    let graph = build_cyclic_graph(&map);
+    let mut queue = Vec::new();
     let mut visited = HashSet::new();
-    visited.insert((0, 1));
-    longest_cyclic_path_2((1, 1), ((map.len() - 1) as isize, (map[0].len() - 2) as isize), &map,visited ) + 1
+    let mut max = 0;
+
+    let end: (isize, isize) = ((map.len() - 1) as isize, (map[0].len() - 2) as isize);
+
+    queue.push(((0_isize, 1_isize), Some(0)));
+    while let Some((pos, distance)) = queue.pop() {
+        let Some(distance) = distance else {
+            visited.remove(&pos);
+            continue;
+        };
+        if pos == end {
+            max = max.max(distance);
+            continue;
+        }
+        if !visited.insert(pos) {
+            continue;
+        }
+        queue.push((pos, None));
+        for (pos, dist) in &graph[&pos] {
+            queue.push((*pos, Some(distance + dist)));
+        }
+    }
+
+    max as usize
 }
 
 fn main() {
